@@ -14,7 +14,7 @@ use Illuminate\Support\Facades\Route;
 */
 
 Route::get('/', function () {
-    return view('welcome');
+    return view('index');
 });
 
 // Route::get('/testDB', function () {
@@ -24,3 +24,11 @@ Route::get('/', function () {
 Auth::routes();
 
 Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name('home');
+
+Route::get('/records', 'App\Http\Controllers\RecordController@index');
+
+Route::get('/echart', 'App\Http\Controllers\RecordController@getjson');
+
+Route::get('/echarts', function () {
+    return view('echart');
+});
