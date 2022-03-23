@@ -13,4 +13,5 @@ require('./bootstrap');
  */
 
 require('./components/Example');
-require('./components/PieChart');
+// require('./components/PieChart');
+// require('./components/DatePicker');

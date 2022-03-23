@@ -1,8 +1,10 @@
 @extends('layouts.app')
 
+
 @section('content')
     <div class="container">
         <div id="container"></div>
+        <div id="container1">DDDD</div>
         {{-- <div class="datepicker mt-2 mr-2 ml-2 mb-2"> --}}
         <div class="row" style="width: 600px; margin: auto;">
             <div class="col-4">
@@ -15,7 +17,7 @@
                 <button id="search" class="btn btn-outline-primary">Search</button>
             </div>
         </div>
-        <div class="row">
+        {{-- <div class="row">
             <div class="col-md-12">
                 <div class="card">
                     <div class="card-header">
@@ -37,16 +39,16 @@
                                         <td>{{ $item->caseNumber }}</td>
                                     </tr>
                                 @endforeach
-                                {{-- <tr>
+                                <tr>
                                     <td>1</td>
                                     <td>1</td>
-                                </tr> --}}
+                                </tr>
                             </tbody>
                         </table>
                     </div>
                 </div>
             </div>
-        </div>
+        </div> --}}
     </div>
 
     <script>
@@ -76,10 +78,6 @@
 
         getData();
 
-        function formatDate() {
-            var date_now = new Date
-        }
-
         //流程名稱分類計算數量
         let groupBy = function(xs, key) {
             return xs.reduce(function(rv, x) {
@@ -106,15 +104,16 @@
             return chartData;
         }
 
-
         let groupedByExchange = groupBy(processData, 'name');
         let chartData1 = newJson(groupedByExchange);
 
+
+
         //篩選日期區間資料
         function inRange() {
-            const newStartDate = document.querySelector('#startDate').value;
-            const newEndDate = document.querySelector('#endDate').value;
-            
+            let newStartDate = document.getElementById("startDate").value;
+            let newEndDate = document.getElementById("endDate").value;
+
             let dateInRange = processData.filter(processData1 => newEndDate > processData1.date);
             let dateInRange1 = dateInRange.filter(dateInRange1 => dateInRange1.date > newStartDate);
             // console.log(dateInRange1);
@@ -140,7 +139,7 @@
                 type: 'pie'
             },
             title: {
-                text: 'Adimmune'
+                text: 'Total'
             },
             tooltip: {
                 pointFormat: '{series.name}: <b>{point.percentage:.1f}% / {point.y} 筆 </b>'
@@ -171,4 +170,5 @@
             }]
         });
     </script>
+
 @endsection

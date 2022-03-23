@@ -15,82 +15,34 @@ class RecordController extends Controller
     public function index()
     {
 
-        $record = DB::select('select processInstanceName,count(processInstanceName) as caseNumber from ProcessInstance where currentState = ? and (processInstanceName like ? or processInstanceName like ?) group by processInstanceName',[1,'電腦%','%作廢%']);
+        $record = DB::table('ProcessInstance')
+                    ->select(DB::raw('count(*) as caseNumber,processInstanceName'))
+                    // ->select('processInstanceName','createdTime')
+                    ->where('currentState', '=', 1)
+                    ->where(function($query){
+                        $query->where('processInstanceName', 'like', '電腦%')
+                              ->orWhere('processInstanceName', 'like', '%作廢%');
+                    })
+                    ->groupBy('processInstanceName')
+                    ->get();
 
         return view('record', compact('record'));
+
     }
 
     public function getjson()
     {
 
-        $record = DB::select('select processInstanceName,count(processInstanceName) as caseNumber from ProcessInstance where currentState = ? and (processInstanceName like ? or processInstanceName like ?) group by processInstanceName',[1,'電腦%','%作廢%']);
-
+        $record = DB::table('ProcessInstance')
+                    ->select(DB::raw('count(*) as caseNumber,processInstanceName,createdTime'))
+                    ->where('currentState', '=', 1)
+                    // ->whereBetween('createdTime',[$startDate,$endDate])
+                    ->where(function($query){
+                        $query->where('processInstanceName', 'like', '電腦%')
+                              ->orWhere('processInstanceName', 'like', '%作廢%');
+                    })
+                    ->groupBy('processInstanceName')
+                    ->get();
         return json_encode($record);
-    }
-
-    /**
-     * Show the form for creating a new resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function create()
-    {
-        //
-    }
-
-    /**
-     * Store a newly created resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
-     */
-    public function store(Request $request)
-    {
-        //
-    }
-
-    /**
-     * Display the specified resource.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
-    public function show($id)
-    {
-        //
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
-    public function edit($id)
-    {
-        //
-    }
-
-    /**
-     * Update the specified resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
-    public function update(Request $request, $id)
-    {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
-    public function destroy($id)
-    {
-        //
     }
 }

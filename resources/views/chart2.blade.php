@@ -1,9 +1,9 @@
 @extends('layouts.app')
 
+
 @section('content')
     <div class="container">
         <div id="container"></div>
-        {{-- <div class="datepicker mt-2 mr-2 ml-2 mb-2"> --}}
         <div class="row" style="width: 600px; margin: auto;">
             <div class="col-4">
                 <input type="date" id="startDate" class="form-control">
@@ -15,40 +15,7 @@
                 <button id="search" class="btn btn-outline-primary">Search</button>
             </div>
         </div>
-        <div class="row">
-            <div class="col-md-12">
-                <div class="card">
-                    <div class="card-header">
-                        <h4>Data List</h4>
-                    </div>
-                    <div class="card-body">
-
-                        <table class="table table-bordered table-striped">
-                            <thead>
-                                <tr>
-                                    <th>流程</th>
-                                    <th>進行中</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @foreach ($record as $item)
-                                    <tr>
-                                        <td>{{ $item->processInstanceName }}</td>
-                                        <td>{{ $item->caseNumber }}</td>
-                                    </tr>
-                                @endforeach
-                                {{-- <tr>
-                                    <td>1</td>
-                                    <td>1</td>
-                                </tr> --}}
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-        </div>
     </div>
-
     <script>
         var processData = [];
 
@@ -56,7 +23,7 @@
             $.ajax({
                 type: "get",
                 async: false, //非同步執行
-                url: '/charts', //SQL資料庫檔案
+                url: '/charts2', //SQL資料庫檔案
                 data: {}, //傳送給資料庫的資料
                 dataType: "json", //json型別
                 success: function(result) {
@@ -64,7 +31,8 @@
                         for (var i = 0; i < result.length; i++) {
                             processData.push({
                                 name: result[i].processInstanceName,
-                                date: result[i].createdTime
+                                date: result[i].createdTime,
+                                state: result[i].currentState
                                 // value: parseInt(result[i].caseNumber)
                             });
                         }
@@ -75,10 +43,6 @@
         }
 
         getData();
-
-        function formatDate() {
-            var date_now = new Date
-        }
 
         //流程名稱分類計算數量
         let groupBy = function(xs, key) {
@@ -106,25 +70,33 @@
             return chartData;
         }
 
+        let filterData = filterType();
+        let groupedByExchange = groupBy(filterData, 'state');
 
-        let groupedByExchange = groupBy(processData, 'name');
         let chartData1 = newJson(groupedByExchange);
+        console.log(chartData1);
+
+        function filterType() {
+            let type = '電腦需求單';
+            let dataInType = processData.filter(processData1 => processData1.name = type)
+            return dataInType;
+        }
 
         //篩選日期區間資料
         function inRange() {
-            const newStartDate = document.querySelector('#startDate').value;
-            const newEndDate = document.querySelector('#endDate').value;
-            
-            let dateInRange = processData.filter(processData1 => newEndDate > processData1.date);
+            let newStartDate = document.getElementById("startDate").value;
+            let newEndDate = document.getElementById("endDate").value;
+
+            let dateInRange = filterData.filter(processData1 => newEndDate > processData1.date);
             let dateInRange1 = dateInRange.filter(dateInRange1 => dateInRange1.date > newStartDate);
-            // console.log(dateInRange1);
+
             return dateInRange1;
         }
 
         //更新圖表
         document.getElementById('search').addEventListener('click', () => {
             var dateInRange1 = inRange();
-            let groupedByExchange1 = groupBy(dateInRange1, 'name');
+            let groupedByExchange1 = groupBy(dateInRange1, 'state');
             let chartData2 = newJson(groupedByExchange1);
             // console.table(chartData2);
             newChart.series[0].setData(chartData2);
@@ -140,7 +112,7 @@
                 type: 'pie'
             },
             title: {
-                text: 'Adimmune'
+                text: '電腦需求單'
             },
             tooltip: {
                 pointFormat: '{series.name}: <b>{point.percentage:.1f}% / {point.y} 筆 </b>'
