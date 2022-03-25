@@ -3,9 +3,6 @@
 
 @section('content')
     <div class="container">
-        <div id="container"></div>
-        <div id="container1">DDDD</div>
-
         <div class="row" style="width: 600px; margin: auto;">
             <div class="col-4">
                 <input type="date" id="startDate" class="form-control">
@@ -16,6 +13,12 @@
             <div class="col-4">
                 <button id="search" class="btn btn-outline-primary">Search</button>
             </div>
+        </div>
+        <div id="container"></div>
+        <div class="row">
+            <div class="col" id="CRcontainer"></div>
+            <div class="col" id="CAcontainer"></div>
+            <div class="col" id="PRInvalidcontainer"></div>
         </div>
         {{-- <div class="row">
             <div class="col-md-12">
@@ -102,6 +105,7 @@
         }
 
         let groupedAllByExchange = groupBy(allProcessData, 'name');
+
         let allChartData = newJson(groupedAllByExchange);
 
         //篩選日期區間資料
@@ -119,13 +123,15 @@
         document.getElementById('search').addEventListener('click', () => {
             updateAllProcesssChart();
             updateComputerRequest();
+            updateComputerRequest();
+            updateComputerRequest();
         });
 
         function updateAllProcesssChart() {
             var dateInRange1 = inRangeAll();
             let groupedAllByExchange1 = groupBy(dateInRange1, 'name');
             let allChartData2 = newJson(groupedAllByExchange1);
-            
+
             AllnewChart.series[0].setData(allChartData2);
         }
 
@@ -160,7 +166,7 @@
                             color: (Highcharts.theme && Highcharts.theme.contrastTextColor) || 'black'
                         }
                     },
-                    showInLegend: true
+                    showInLegend: false
                 }
             },
             series: [{
@@ -211,40 +217,92 @@
             return chartData;
         }
 
-        let filterData = filterType();
-        let groupedByExchange = groupBy(filterData, 'state');
 
-        let chartData1 = newJson(groupedByExchange);
-        // console.log(chartData1);
 
-        function filterType() {
+        function filterCRType() {
             let type = '電腦需求單';
-            let dataInType = processStateData.filter(processStateData1 => processStateData1.name = type)
+            let dataInType = processStateData.filter(processStateData => processStateData.name == type)
             return dataInType;
         }
 
+        function filterCAType() {
+            let type = '電腦帳號申請單';
+            let dataInType = processStateData.filter(processStateData1 => processStateData1.name == type)
+            return dataInType;
+        }
+
+        function filterPRInvalidType() {
+            let type = '請購單_採購單作廢申請';
+            let dataInType = processStateData.filter(processStateData1 => processStateData1.name == type)
+            return dataInType;
+        }
+
+        let filterCRData = filterCRType();
+        let filterCAData = filterCAType();
+        let filterPRInvalidData = filterPRInvalidType();
+
+
+        let groupedByCR = groupBy(filterCRData, 'state');
+        let groupedByCA = groupBy(filterCAData, 'state');
+        let groupedByPRInvalid = groupBy(filterPRInvalidData, 'state');
+
+        let chartDataCR = newJson(groupedByCR);
+        let chartDataCA = newJson(groupedByCA);
+        let chartDataPRInvalid = newJson(groupedByPRInvalid);
+        
+
         //篩選日期區間資料
-        function inRange() {
+        function CRinRange() {
             let newStartDate = document.getElementById("startDate").value;
             let newEndDate = document.getElementById("endDate").value;
 
-            let dateInRange = filterData.filter(processStateData1 => newEndDate > processStateData1.date);
-            let dateInRange1 = dateInRange.filter(dateInRange1 => dateInRange1.date > newStartDate);
+            let dateInRangeCR = filterCRData.filter(processStateData1 => newEndDate > processStateData1.date);
+            let dateInRangeCR1 = dateInRangeCR.filter(dateInRange1 => dateInRange1.date > newStartDate);
 
-            return dateInRange1;
+            return dateInRangeCR1;
+        }
+
+        function CAinRange() {
+            let newStartDate = document.getElementById("startDate").value;
+            let newEndDate = document.getElementById("endDate").value;
+
+            let dateInRangeCA = filterCAData.filter(processStateData1 => newEndDate > processStateData1.date);
+            let dateInRangeCA1 = dateInRangeCA.filter(dateInRange1 => dateInRange1.date > newStartDate);
+
+            return dateInRangeCA1;
+        }
+
+        function PRInvalidinRange() {
+            let newStartDate = document.getElementById("startDate").value;
+            let newEndDate = document.getElementById("endDate").value;
+
+            let dateInRangePRInvalid = filterPRInvalidData.filter(processStateData1 => newEndDate > processStateData1.date);
+            let dateInRangePRInvalid1 = dateInRangePRInvalid.filter(dateInRange1 => dateInRange1.date > newStartDate);
+
+            return dateInRangePRInvalid1;
         }
 
         //更新圖表
         function updateComputerRequest() {
-            var dateInRange1 = inRange();
-            let groupedByExchange1 = groupBy(dateInRange1, 'state');
-            let chartData2 = newJson(groupedByExchange1);
-            // console.table(chartData2);
-            newChart.series[0].setData(chartData2);
+            var dateInRangeCR = CRinRange();
+            let groupedByCR = groupBy(dateInRangeCR, 'state');
+            let chartCR = newJson(groupedByCR);
+
+            var dateInRangeCA = CAinRange();
+            let groupedByCA = groupBy(dateInRangeCA, 'state');
+            let chartCA = newJson(groupedByCA);
+
+            var dateInRangePRInvalid = PRInvalidinRange();
+            let groupedByPRInvalid = groupBy(dateInRangePRInvalid, 'state');
+            let chartPRInvalid = newJson(groupedByPRInvalid);
+
+            CRChart.series[0].setData(chartCR);
+            CAChart.series[0].setData(chartCA);
+            PRInvalidChart.series[0].setData(chartPRInvalid);
         }
 
         // Build the chart
-        var newChart = Highcharts.chart('container1', {
+        var CRChart = Highcharts.chart('CRcontainer', {
             chart: {
                 backgroundColor: '#f8fafc',
                 plotBackgroundColor: null,
@@ -278,9 +336,89 @@
                 }
             },
             series: [{
-                name: 'Brands',
+                name: '筆數',
                 colorByPoint: true,
-                data: chartData1
+                data: chartDataCR
+            }]
+        });
+
+        var CAChart = Highcharts.chart('CAcontainer', {
+            chart: {
+                backgroundColor: '#f8fafc',
+                plotBackgroundColor: null,
+                plotBorderWidth: null,
+                plotShadow: false,
+                type: 'pie'
+            },
+            title: {
+                text: '電腦帳號申請單'
+            },
+            tooltip: {
+                pointFormat: '{series.name}: <b>{point.percentage:.1f}% / {point.y} 筆 </b>'
+            },
+            accessibility: {
+                point: {
+                    valueSuffix: '%'
+                }
+            },
+            plotOptions: {
+                pie: {
+                    allowPointSelect: true,
+                    cursor: 'pointer',
+                    dataLabels: {
+                        enabled: true,
+                        format: '<b>{point.name}</b>: {point.percentage:.1f} %',
+                        style: {
+                            color: (Highcharts.theme && Highcharts.theme.contrastTextColor) || 'black'
+                        }
+                    },
+                    showInLegend: true
+                }
+            },
+            series: [{
+                name: '筆數',
+                colorByPoint: true,
+                data: chartDataCA
+            }]
+        });
+
+        var PRInvalidChart = Highcharts.chart('PRInvalidcontainer', {
+            chart: {
+                backgroundColor: '#f8fafc',
+                plotBackgroundColor: null,
+                plotBorderWidth: null,
+                plotShadow: false,
+                type: 'pie'
+            },
+            title: {
+                text: '請購單_採購單作廢申請'
+            },
+            tooltip: {
+                pointFormat: '{series.name}: <b>{point.percentage:.1f}% / {point.y} 筆 </b>'
+            },
+            accessibility: {
+                point: {
+                    valueSuffix: '%'
+                }
+            },
+            plotOptions: {
+                pie: {
+                    allowPointSelect: true,
+                    cursor: 'pointer',
+                    dataLabels: {
+                        enabled: true,
+                        format: '<b>{point.name}</b>: {point.percentage:.1f} %',
+                        style: {
+                            color: (Highcharts.theme && Highcharts.theme.contrastTextColor) || 'black'
+                        }
+                    },
+                    showInLegend: true
+                }
+            },
+            series: [{
+                name: '筆數',
+                colorByPoint: true,
+                data: chartDataPRInvalid
             }]
         });
     </script>
