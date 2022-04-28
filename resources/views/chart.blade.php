@@ -3,58 +3,43 @@
 
 @section('content')
     <div class="container">
-        <div class="row" style="width: 600px; margin: auto;">
-            <div class="col-4">
+        <div class="row">
+            <div class="w-48">
                 <input type="date" id="startDate" class="form-control">
             </div>
-            <div class="col-4">
+            <div class="w-48">
                 <input type="date" id="endDate" class="form-control">
             </div>
-            <div class="col-4">
-                <button id="search" class="btn btn-outline-primary">Search</button>
+            <div class="w-24">
+                <button id="search" class="btn btn-outline-primary w-24">Search</button>
             </div>
         </div>
-        <div id="container"></div>
-        <div class="row">
-            <div class="col" id="CRcontainer"></div>
-            <div class="col" id="CAcontainer"></div>
-            <div class="col" id="PRInvalidcontainer"></div>
-        </div>
-        {{-- <div class="row">
-            <div class="col-md-12">
-                <div class="card">
-                    <div class="card-header">
-                        <h4>Data List</h4>
-                    </div>
-                    <div class="card-body">
 
-                        <table class="table table-bordered table-striped">
-                            <thead>
-                                <tr>
-                                    <th>流程</th>
-                                    <th>進行中</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @foreach ($record as $item)
-                                    <tr>
-                                        <td>{{ $item->processInstanceName }}</td>
-                                        <td>{{ $item->caseNumber }}</td>
-                                    </tr>
-                                @endforeach
-                                <tr>
-                                    <td>1</td>
-                                    <td>1</td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-        </div> --}}
+        <div id="container" class="mt-2 mb-2"></div>
+        <div class="row">
+            <div class="col-4" id="CRcontainer"></div>
+            <div class="col-4" id="CAcontainer"></div>
+            <div class="col-4" id="PRInvalidcontainer"></div>
+        </div>
     </div>
 
     <script>
+        //控制endDate不能大於今天
+        $(function() {
+            var date_now = new Date();
+            var year = date_now.getFullYear();
+
+            var month = date_now.getMonth() + 1 < 10 ? "0" + (date_now.getMonth() + 1) : (date_now.getMonth() + 1);
+            var date = date_now.getDate() < 10 ? "0" + date_now.getDate() : date_now.getDate();
+
+            $("#endDate").attr("max", year + "-" + month + "-" + date);
+        })
+
+        //控制endDate不能小於startDate
+        $("#startDate").change(function() {
+            $("#endDate").attr("min", $(this).val());
+        })
+
         var allProcessData = [];
 
         function getAllData() {
@@ -92,7 +77,7 @@
 
         //轉換成Chart data格式
         function newJson(value) {
-            allChartData = []
+            var allChartData = []
             times = Object.values(value).length
 
             for (let index = 0; index < times; index++) {
@@ -138,14 +123,18 @@
         // Build the All Process chart
         var AllnewChart = Highcharts.chart('container', {
             chart: {
-                backgroundColor: '#f8fafc',
+                // backgroundColor: '#f8fafc',
                 plotBackgroundColor: null,
                 plotBorderWidth: null,
                 plotShadow: false,
+                borderRadius: 20,
                 type: 'pie'
             },
             title: {
-                text: 'Total'
+                text: ''
+            },
+            credits: {
+                enabled: false
             },
             tooltip: {
                 pointFormat: '{series.name}: <b>{point.percentage:.1f}% / {point.y} 筆 </b>'
@@ -161,7 +150,7 @@
                     cursor: 'pointer',
                     dataLabels: {
                         enabled: true,
-                        format: '<b>{point.name}</b>: {point.percentage:.1f} %',
+                        format: '<b>{point.name}</b>: {point.percentage:.1f} % ({point.y}) </b>',
                         style: {
                             color: (Highcharts.theme && Highcharts.theme.contrastTextColor) || 'black'
                         }
@@ -221,7 +210,7 @@
 
         function filterCRType() {
             let type = '電腦需求單';
-            let dataInType = processStateData.filter(processStateData => processStateData.name == type)
+            let dataInType = processStateData.filter(processStateData1 => processStateData1.name == type)
             return dataInType;
         }
 
@@ -249,7 +238,20 @@
         let chartDataCR = newJson(groupedByCR);
         let chartDataCA = newJson(groupedByCA);
         let chartDataPRInvalid = newJson(groupedByPRInvalid);
-        
+
+        //排序要匯成圖表的資料
+        let crsort = chartDataCR.sort(function(a, b) {
+            return a.name > b.name ? 1 : -1;
+        });
+
+        let casort = chartDataCA.sort(function(a, b) {
+            return a.name > b.name ? 1 : -1;
+        });
+
+        let PRInvalidsort = chartDataPRInvalid.sort(function(a, b) {
+            return a.name > b.name ? 1 : -1;
+        });
+
 
         //篩選日期區間資料
         function CRinRange() {
@@ -276,8 +278,10 @@
             let newStartDate = document.getElementById("startDate").value;
             let newEndDate = document.getElementById("endDate").value;
 
-            let dateInRangePRInvalid = filterPRInvalidData.filter(processStateData1 => newEndDate > processStateData1.date);
-            let dateInRangePRInvalid1 = dateInRangePRInvalid.filter(dateInRange1 => dateInRange1.date > newStartDate);
+            let dateInRangePRInvalid = filterPRInvalidData.filter(processStateData1 => newEndDate >
+                processStateData1.date);
+            let dateInRangePRInvalid1 = dateInRangePRInvalid.filter(dateInRange1 => dateInRange1.date >
+                newStartDate);
 
             return dateInRangePRInvalid1;
         }
@@ -296,6 +300,18 @@
             let groupedByPRInvalid = groupBy(dateInRangePRInvalid, 'state');
             let chartPRInvalid = newJson(groupedByPRInvalid);
 
+            //排序要匯成圖表的資料
+            let crsort = chartCR.sort(function(a, b) {
+                return a.name > b.name ? 1 : -1;
+            });
+
+            let casort = chartCA.sort(function(a, b) {
+                return a.name > b.name ? 1 : -1;
+            });
+
+            let PRInvalidsort = chartPRInvalid.sort(function(a, b) {
+                return a.name > b.name ? 1 : -1;
+            });
             CRChart.series[0].setData(chartCR);
             CAChart.series[0].setData(chartCA);
             PRInvalidChart.series[0].setData(chartPRInvalid);
@@ -304,14 +320,18 @@
         // Build the chart
         var CRChart = Highcharts.chart('CRcontainer', {
             chart: {
-                backgroundColor: '#f8fafc',
+                // backgroundColor: '#f8fafc',
                 plotBackgroundColor: null,
                 plotBorderWidth: null,
                 plotShadow: false,
+                borderRadius: 20,
                 type: 'pie'
             },
             title: {
                 text: '電腦需求單'
+            },
+            credits: {
+                enabled: false
             },
             tooltip: {
                 pointFormat: '{series.name}: <b>{point.percentage:.1f}% / {point.y} 筆 </b>'
@@ -327,7 +347,7 @@
                     cursor: 'pointer',
                     dataLabels: {
                         enabled: true,
-                        format: '<b>{point.name}</b>: {point.percentage:.1f} %',
+                        format: '<b>{point.name}</b>: {point.percentage:.1f} % ({point.y})',
                         style: {
                             color: (Highcharts.theme && Highcharts.theme.contrastTextColor) || 'black'
                         }
@@ -344,14 +364,18 @@
 
         var CAChart = Highcharts.chart('CAcontainer', {
             chart: {
-                backgroundColor: '#f8fafc',
+                // backgroundColor: '#f8fafc',
                 plotBackgroundColor: null,
                 plotBorderWidth: null,
                 plotShadow: false,
+                borderRadius: 20,
                 type: 'pie'
             },
             title: {
                 text: '電腦帳號申請單'
+            },
+            credits: {
+                enabled: false
             },
             tooltip: {
                 pointFormat: '{series.name}: <b>{point.percentage:.1f}% / {point.y} 筆 </b>'
@@ -367,7 +391,7 @@
                     cursor: 'pointer',
                     dataLabels: {
                         enabled: true,
-                        format: '<b>{point.name}</b>: {point.percentage:.1f} %',
+                        format: '<b>{point.name}</b>: {point.percentage:.1f} % ({point.y})',
                         style: {
                             color: (Highcharts.theme && Highcharts.theme.contrastTextColor) || 'black'
                         }
@@ -384,14 +408,18 @@
 
         var PRInvalidChart = Highcharts.chart('PRInvalidcontainer', {
             chart: {
-                backgroundColor: '#f8fafc',
+                // backgroundColor: '#f8fafc',
                 plotBackgroundColor: null,
                 plotBorderWidth: null,
                 plotShadow: false,
+                borderRadius: 20,
                 type: 'pie'
             },
             title: {
                 text: '請購單_採購單作廢申請'
+            },
+            credits: {
+                enabled: false
             },
             tooltip: {
                 pointFormat: '{series.name}: <b>{point.percentage:.1f}% / {point.y} 筆 </b>'
@@ -407,7 +435,7 @@
                     cursor: 'pointer',
                     dataLabels: {
                         enabled: true,
-                        format: '<b>{point.name}</b>: {point.percentage:.1f} %',
+                        format: '<b>{point.name}</b>: {point.percentage:.1f} % ({point.y})',
                         style: {
                             color: (Highcharts.theme && Highcharts.theme.contrastTextColor) || 'black'
                         }
