@@ -15,7 +15,8 @@ class ChartController extends Controller
                     // ->where('currentState', '=', 1)
                     ->where(function($query){
                         $query->where('processInstanceName', 'like', '電腦%')
-                              ->orWhere('processInstanceName', 'like', '%作廢%');
+                            // ->orWhere('processInstanceName', 'like', '%作廢%');
+                              ->orWhere('processInstanceName', 'like', '%請購單_採購單作廢%');
                     })
                     // ->groupBy('processInstanceName')
                     ->get();

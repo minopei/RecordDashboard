@@ -36,6 +36,7 @@ Route::get('/echart', 'App\Http\Controllers\RecordController@getjson');
 Route::get('/echarts', function () {
     return view('echart');
 });
+
 Route::get('/charts2',[Chart2Controller::class, 'getjson']);
 Route::get('/charts',[ChartController::class, 'getjson']);
 

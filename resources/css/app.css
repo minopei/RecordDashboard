@@ -1,16 +1,20 @@
+.clearfix:after {
+    display: block;
+    content: ".";
+    height: 0;
+    visibility: hidden;
+    clear: both;
+}
 
+div.selectDate {
+    float: right
+}
 
 .highcharts-figure,
 .highcharts-data-table table {
     min-width: 320px;
     max-width: 660px;
     margin: 1em auto;
-}
-
-.highcharts-series .highcharts-point-select {
-  fill: #f8fafc;
-  stroke: #f00;
-  stroke-dasharray: 10;
 }
 
 .highcharts-data-table table {
@@ -46,6 +50,5 @@
 }
 
 .highcharts-data-table tr:hover {
-    /* background: #f1f7ff; */
-    background: #f8fafc;
+    background: #f1f7ff;
 }
