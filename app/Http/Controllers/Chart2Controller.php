@@ -19,8 +19,10 @@ class Chart2Controller extends Controller
                     ELSE '已終止' END AS currentState"))
                     // ->where('currentState', '=', 1)
                     ->where(function($query){
-                        $query->where('processInstanceName', 'like', '電腦%')
-                        ->orWhere('processInstanceName', 'like', '%作廢%');
+                        $query->where('processInstanceName', 'like', '電腦需求%')
+                              ->orWhere('processInstanceName', 'like', '電腦帳號%')
+                              // ->orWhere('processInstanceName', 'like', '%作廢%');
+                              ->orWhere('processInstanceName', 'like', '%請購單_採購單作廢%');
                     })
                     // ->groupBy('processInstanceName')
                     ->get();
